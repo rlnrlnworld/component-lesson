@@ -660,14 +660,19 @@ class Store {
             get: ()=>state[key],
             set: (val)=>{
                 state[key] = val;
-                this.observers[key]();
+                // 배열 데이터로 되어있는 콜백 함수들을 차례대로 실행
+                this.observers[key].forEach((observer)=>observer(val));
             }
         });
     }
     //* 상태를 감시하는 메소드
     subscribe(key, cb) {
         // 배열 데이터를 이용하여 실행 함수를 한 개 이상 등록할 수 있도록 구현
-        this.observers[key] = cb;
+        // 배열 데이터이면 push 메소드 사용
+        // this.observers ==> { key: [cb1, cb2, cb3] } 의 형식을 가진다.
+        Array.isArray(this.observers[key]) ? this.observers[key].push(cb) : this.observers[key] = [
+            cb
+        ];
     }
 }
 
@@ -820,7 +825,8 @@ class Title extends (0, _rlnrln.Component) {
         super({
             tagName: "h1"
         });
-        (0, _messageDefault.default).subscribe("message", ()=>{
+        (0, _messageDefault.default).subscribe("message", (newVal)=>{
+            console.log("newVal: ", newVal);
             this.render();
         });
     }
